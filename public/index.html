@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html> 
+    <head>
+        <title> Connect to a room </title>
+        <script type="text/javascript" src="socket.io/socket.io.js"></script>
+    <style>
+        .screen {
+            display:none;
+        }
+        .screen.active{
+            display: block;
+        }
+    </style>
+    </head>
+    
+    <body> 
+        <div class="app">
+            <div class="screen join-screen active">
+                <div class="form">
+                    <h2> Share your files Securely</h2>
+                <div class="form-input">
+                    <button id="sender-creating-room">Create a room</button>
+                </div>
+                <div class="form-input" id="join-id">
+                </div>
+                </div>
+            </div>
+            <div class="screen fs-screen">
+            <div class="file-input">
+                <label for="file-input">
+                    Click here to add share your files
+                </label>
+                <input type="file" id="file-input">
+            </div>
+
+            <div class="files-list">
+                <div class="title">
+                    Shared Files:
+                </div>
+                <div class="item">
+                    <div class="progress">0%</div>
+                    <div class="filename">File.txt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <script>
+            var socket = io();
+            var RoomIDHTML = document.getElementById('Room-id');
+            var RoomNumberHTML = document.getElementById('Room-number');
+            var button = document.getElementById('sender-creating-room');
+            var file = document.getElementById('file-input');
+            var reciever_id;
+
+            button.addEventListener('click', () => {
+                var RoomId = Math.floor(Math.random() * 100)*1234;
+                RoomId = RoomId.toString()
+                document.querySelector('#join-id').innerHTML = `
+                    <b>Room ID</b>
+                    <span>${RoomId}</span>
+                `
+                socket.emit('sender-join', {
+                    uid: RoomId
+                });
+            });
+            file.addEventListener('change', (e) => {
+                let file = e.target.files[0];
+                if(!file){
+                    return;
+                }
+                let reader = new FileReader();
+                reader.onload = function(e){
+                    let buffer = new Uint8Array(reader.result); // file data in bits
+                    shareFile({filename: file.name} , buffer)
+                }
+        
+                reader.readAsArrayBuffer(file);
+            })
+            
+            function shareFile(metadata, buffer){
+              socket.emit('file-meta', {
+                    uid: reciever_id,
+                    metadata: metadata
+                })
+               socket.on('fs-share', () => {
+                    let chunk = buffer.slice(0, 1024) 
+                    socket.emit('file-raw', {
+                        uid: reciever_id,
+                        buffer: chunk
+                       })   
+                })
+            }
+           
+            socket.on('init', (uid) => {
+                reciever_id = uid;
+                document.querySelector('.join-screen').classList.remove('active');
+                document.querySelector('.fs-screen').classList.add('active');
+            })
+            
+        </script>
+       
+     </body>
+</html>
