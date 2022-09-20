@@ -39,7 +39,7 @@
             </div>
 
         <script>
-            
+    
             var socket = io();
             var button = document.getElementById('reciever-joining-room');
             let sender_id;
@@ -55,27 +55,31 @@
             });
 
             let fileShare = {}
-            
+           
             socket.on('fs-meta', (metadata) => {
                 fileShare.metadata = metadata;
                 fileShare.buffer = [];
                 socket.emit('fs-start',{
                     uid: sender_id
                 })
-
             })
-
+          
             socket.on('fs-share', (buffer) => {
+                fileShare.buffer = [];
                 fileShare.buffer.push(buffer)
-                fileShare.transmitted += buffer.byteLength;
+                fileShare.transmitted = buffer.byteLength;
+                console.log(fileShare.transmitted);
                 if(buffer.byteLength){
-                    blob = new Blob([fileShare.buffer], {type: typeof(fileShare.buffer)})
+                    blob = new Blob([buffer], {type: typeof(fileShare.buffer)})
                     download(blob, fileShare.metadata.filename)
                     fileShare = {}
                 } else {
-                    alert("7amboli not successfull")
+                     socket.emit('fs-start', {
+                        uid: senderID,
+                    })
                 }
             })
+
         </script>
        
      </body>
