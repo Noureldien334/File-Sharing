@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html> 
     <head>
-        <title> Connect to a room </title>
+        <title> Join a room </title>
         <script type="text/javascript" src="socket.io/socket.io.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.1/download.min.js"></script>
         <style>
@@ -19,68 +19,27 @@
             <div class="screen join-screen active">
                 <div class="form">
                     <h2> Share your files Securely</h2>
-                <div class="form-input">
-                    <label for="join-id"> Join ID</label>
-                    <input type="text" id="join-id">
-                </div>
-                <div class="form-input">
-                    <button id="reciever-joining-room">Connect</button>
-                </div>
-            </div>
-            </div>
-            <div class="screen fs-screen">
-                <div class="file-input">
-                    <div class="files-list">
-                        <div class="title">
-                            Shared Files:
-                        </div>
+                    <div class="form-input">
+                        <label for="join-id"> Join ID</label>
+                        <input type="text" id="join-id">
+                    </div>
+                    <div class="form-input">
+                        <button id="reciever-joining-room">Connect</button>
                     </div>
                 </div>
             </div>
 
-        <script>
-    
-            var socket = io();
-            var button = document.getElementById('reciever-joining-room');
-            let sender_id;
-            button.addEventListener('click', () => {
-                sender_id = document.querySelector('#join-id').value;
-                var RoomId = Math.floor(Math.random() * 100)*1234;
-                socket.emit('reciever-join', {
-                    uid: RoomId,
-                    sender_uid: sender_id
-                });
-                document.querySelector('.join-screen').classList.remove('active');
-                document.querySelector('.fs-screen').classList.add('active');
-            });
+            <div class="screen fs-screen">
+                <div class="file-input">
+                    <label for="file-input">
+                        Click here to add share your files
+                    </label>
+                    <input type="file" id="file-input">
+                </div>
+            </div>
+        </div>
+        
+        <script type="text/javascript" src="./rec.js"></script>
 
-            let fileShare = {}
-           
-            socket.on('fs-meta', (metadata) => {
-                fileShare.metadata = metadata;
-                fileShare.buffer = [];
-                socket.emit('fs-start',{
-                    uid: sender_id
-                })
-            })
-          
-            socket.on('fs-share', (buffer) => {
-                fileShare.buffer = [];
-                fileShare.buffer.push(buffer)
-                fileShare.transmitted = buffer.byteLength;
-                console.log(fileShare.transmitted);
-                if(buffer.byteLength){
-                    blob = new Blob([buffer], {type: typeof(fileShare.buffer)})
-                    download(blob, fileShare.metadata.filename)
-                    fileShare = {}
-                } else {
-                     socket.emit('fs-start', {
-                        uid: senderID,
-                    })
-                }
-            })
-
-        </script>
-       
      </body>
 </html>
