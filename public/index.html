@@ -3,6 +3,8 @@
     <head>
         <title> Connect to a room </title>
         <script type="text/javascript" src="socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.1/download.min.js"></script>
+        
     <style>
         .screen {
             display:none;
@@ -25,82 +27,17 @@
                 </div>
                 </div>
             </div>
-            <div class="screen fs-screen">
-            <div class="file-input">
-                <label for="file-input">
-                    Click here to add share your files
-                </label>
-                <input type="file" id="file-input">
-            </div>
-
-            <div class="files-list">
-                <div class="title">
-                    Shared Files:
+                <div class="screen fs-screen">
+                    <div class="file-input">
+                        <label for="file-input">
+                            Click here to add share your files
+                        </label>
+                        <input type="file" id="file-input">
+                    </div>
                 </div>
-                <div class="item">
-                    <div class="progress">0%</div>
-                    <div class="filename">File.txt</div>
-                </div>
-            </div>
-        </div>
     </div>
+      
+        <script type="text/javascript" src="./index.js"></script>
 
-        <script>
-            var socket = io();
-            var RoomIDHTML = document.getElementById('Room-id');
-            var RoomNumberHTML = document.getElementById('Room-number');
-            var button = document.getElementById('sender-creating-room');
-            var file = document.getElementById('file-input');
-            var reciever_id;
-
-            button.addEventListener('click', () => {
-
-                var RoomId = Math.floor(Math.random() * 100)*1234;
-                RoomId = RoomId.toString()
-                document.querySelector('#join-id').innerHTML = `
-                    <b>Room ID</b>
-                    <span>${RoomId}</span>
-                `
-                socket.emit('sender-join', {
-                    uid: RoomId
-                });
-            });
-            file.addEventListener('change', (e) => { 
-                e.preventDefault();
-                let file = e.target.files[0];
-                let reader = new FileReader();
-                reader.onload = function(e){
-                    let buffer = new Uint8Array(reader.result);
-                    shareFile({filename: file.name} , buffer)
-                }
-                  reader.readAsArrayBuffer(file)
-            })
-
-              function shareFile(metadata, buffer){
-                socket.emit('file-meta', {
-                        uid: reciever_id,
-                        metadata: metadata
-                })
-
-               socket.on('fs-share', () => {
-                    let chunk = buffer.slice(0, buffer.byteLength+1);
-                    buffer = buffer.slice(buffer.byteLength+1, buffer.length);
-                    if (chunk.byteLength){
-                    socket.emit('file-raw', {
-                        uid: reciever_id,
-                        buffer: chunk
-                    })  
-                    }
-                })
-            }
-           
-            socket.on('init', (uid) => {
-                reciever_id = uid;
-                document.querySelector('.join-screen').classList.remove('active');
-                document.querySelector('.fs-screen').classList.add('active');
-            })
-            
-        </script>
-       
      </body>
 </html>
